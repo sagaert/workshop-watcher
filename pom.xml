@@ -16,6 +16,7 @@
 		<project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 		<spring.boot.version>2.1.7.RELEASE</spring.boot.version>
 		<jfreechart.version>1.0.19</jfreechart.version>
+		<common.io.versoin>2.6</common.io.versoin>
 	</properties>
 
 	<dependencyManagement>
@@ -51,25 +52,23 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.6</version>
+			<version>${common.io.versoin}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 			<version>${jfreechart.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>de.sciss</groupId>
-            <artifactId>jrpicam</artifactId>
-            <version>0.2.0</version>
-        </dependency>
 
 		<!-- JAX-WS-RS -->
+		<!-- TODO: Remove and use the Spring-Stuff -->
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
 			<version>2.0</version>
 		</dependency>
+		<!-- JAX-WS-RS -->
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
