@@ -42,8 +42,7 @@ public class Photographer {
         final int result = process.waitFor();
         if(result == 0) {
             final File file = new File(filepath);
-            return ImageIO.read(file);:q::q!
-                :
+            return ImageIO.read(file);
         } else {
             throw new RuntimeException("Error taking a photo, camera script returned " + result);
         }
