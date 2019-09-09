@@ -1,4 +1,4 @@
-package org.salex.raspberry.agent;
+package org.salex.raspberry.workshop;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

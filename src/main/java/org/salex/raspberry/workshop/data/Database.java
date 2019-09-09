@@ -1,9 +1,9 @@
-package org.salex.raspberry.agent;
+package org.salex.raspberry.workshop.data;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public interface WorkshopRepository extends CrudRepository<Measurement, Long> {
+public interface Database extends CrudRepository<Measurement, Long> {
 
 }
