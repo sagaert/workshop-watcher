@@ -111,17 +111,17 @@ public class ClimateDatabase {
         });
     }
 
-    public List<Measurement> getMeasurements(int hours, Sensor sensor) {
-        try {
-            PreparedStatement statement = this.connection.prepareStatement("select r.TEMPERATURE as temp, r.HUMIDITY as hum, m.MOMENT as moment, m.ID as mid, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and r.sensor = ? and timestamp(m.moment) >= ?");
-            statement.setInt(1, sensor.getId()); // Sensor-ID
-            statement.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis() - (3600000L * hours))); // Die letzten "hours" Stunden
-            return transferToMeasurements(statement.executeQuery());
-        } catch(SQLException e) {
-            LOG.error("Error reading measurements", e);
-            return new ArrayList<Measurement>();
-        }
-    }
+//    public List<Measurement> getMeasurements(int hours, Sensor sensor) {
+//        try {
+//            PreparedStatement statement = this.connection.prepareStatement("select r.TEMPERATURE as temp, r.HUMIDITY as hum, m.MOMENT as moment, m.ID as mid, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and r.sensor = ? and timestamp(m.moment) >= ?");
+//            statement.setInt(1, sensor.getId()); // Sensor-ID
+//            statement.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis() - (3600000L * hours))); // Die letzten "hours" Stunden
+//            return transferToMeasurements(statement.executeQuery());
+//        } catch(SQLException e) {
+//            LOG.error("Error reading measurements", e);
+//            return new ArrayList<Measurement>();
+//        }
+//    }
 
     private Measurement getMeasurement(List<Measurement> measurements, int mid) {
         for(Measurement measurement : measurements) {
@@ -141,28 +141,28 @@ public class ClimateDatabase {
         return null;
     }
 
-    public Map<Sensor, List<BoundaryReading>> getBoundaryReading(int days) {
-        try {
-            PreparedStatement statement = this.connection.prepareStatement("select max(r.TEMPERATURE) as max_temp, min(r.TEMPERATURE) as min_temp, max(r.HUMIDITY) as max_hum, min(r.HUMIDITY) as min_hum, date(m.MOMENT) as day, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and date(m.moment) >= ? group by date(m.MOMENT), r.sensor");
-            statement.setDate(1, new java.sql.Date(System.currentTimeMillis() - (86400000L * days))); // Die letzten days Tage
-            return transferToBoundaryReading(statement.executeQuery());
-        } catch (SQLException e) {
-            LOG.error("Error reading measurements", e);
-            return new HashMap<Sensor, List<BoundaryReading>>();
-        }
-    }
-
-    public List<BoundaryReading> getBoundaryReading(int days, Sensor sensor) {
-        try {
-            PreparedStatement statement = this.connection.prepareStatement("select max(r.TEMPERATURE) as max_temp, min(r.TEMPERATURE) as min_temp, max(r.HUMIDITY) as max_hum, min(r.HUMIDITY) as min_hum, date(m.MOMENT) as day, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and r.sensor = ? and date(m.moment) >= ? group by date(m.MOMENT), r.sensor");
-            statement.setInt(1, sensor.getId()); // Sensor-ID
-            statement.setDate(2, new java.sql.Date(System.currentTimeMillis() - (86400000L * days))); // Die letzten days Tage
-            return transferToBoundaryReading(statement.executeQuery()).get(sensor);
-        } catch (SQLException e) {
-            LOG.error("Error reading measurements", e);
-            return new ArrayList<BoundaryReading>();
-        }
-    }
+//    public Map<Sensor, List<BoundaryReading>> getBoundaryReading(int days) {
+//        try {
+//            PreparedStatement statement = this.connection.prepareStatement("select max(r.TEMPERATURE) as max_temp, min(r.TEMPERATURE) as min_temp, max(r.HUMIDITY) as max_hum, min(r.HUMIDITY) as min_hum, date(m.MOMENT) as day, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and date(m.moment) >= ? group by date(m.MOMENT), r.sensor");
+//            statement.setDate(1, new java.sql.Date(System.currentTimeMillis() - (86400000L * days))); // Die letzten days Tage
+//            return transferToBoundaryReading(statement.executeQuery());
+//        } catch (SQLException e) {
+//            LOG.error("Error reading measurements", e);
+//            return new HashMap<Sensor, List<BoundaryReading>>();
+//        }
+//    }
+//
+//    public List<BoundaryReading> getBoundaryReading(int days, Sensor sensor) {
+//        try {
+//            PreparedStatement statement = this.connection.prepareStatement("select max(r.TEMPERATURE) as max_temp, min(r.TEMPERATURE) as min_temp, max(r.HUMIDITY) as max_hum, min(r.HUMIDITY) as min_hum, date(m.MOMENT) as day, r.sensor as sensor from MEASUREMENTS m, READINGS r where r.measurement = m.id and r.sensor = ? and date(m.moment) >= ? group by date(m.MOMENT), r.sensor");
+//            statement.setInt(1, sensor.getId()); // Sensor-ID
+//            statement.setDate(2, new java.sql.Date(System.currentTimeMillis() - (86400000L * days))); // Die letzten days Tage
+//            return transferToBoundaryReading(statement.executeQuery()).get(sensor);
+//        } catch (SQLException e) {
+//            LOG.error("Error reading measurements", e);
+//            return new ArrayList<BoundaryReading>();
+//        }
+//    }
 
     private Map<Sensor, List<BoundaryReading>> transferToBoundaryReading(ResultSet result) throws SQLException {
         Map<Sensor, List<BoundaryReading>> boundaryReadings = new HashMap<Sensor, List<BoundaryReading>>();
