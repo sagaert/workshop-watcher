@@ -54,7 +54,7 @@ public class GeneratorUtils {
  		}
 		return format;
 	}
-	
+
 	public static void appendTable(StringBuffer text, Map<Sensor, List<BoundaryReading>> data, Map<Sensor, Map<String, Image>> diagrams, List<Sensor> sensors) {
 		text.append("<table border=\"0\">");
 		text.append("<tr>");

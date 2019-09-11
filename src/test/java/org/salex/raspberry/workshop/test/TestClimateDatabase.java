@@ -1,18 +1,28 @@
 package org.salex.raspberry.workshop.test;
 
-public class TestDatabase {
-//	Database database;
-//
-//	@Before
-//	public void setUp() {
-//		this.database = new Database("jdbc:derby://localhost:1527/climate");
-//	}
-//
-//	@After
-//	public void tearDown() {
-//		this.database.stop();
-//	}
-//
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.salex.raspberry.workshop.data.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collection;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class TestClimateDatabase {
+	@Autowired
+	ClimateDatabase database;
+
+	@Test
+	public void testReadSensors() {
+		int sensorCount = this.database.getSensors().size();
+		Assert.assertEquals(4,sensorCount);
+	}
+
 //	@Test
 //	public void testReadMeasurements() {
 //		Collection<Measurement> m = this.database.getMeasurements(24);

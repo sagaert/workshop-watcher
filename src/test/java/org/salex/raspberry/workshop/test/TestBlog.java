@@ -1,10 +1,24 @@
 package org.salex.raspberry.workshop.test;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class TestBlog {
 //	private Blog blog;
 //	private Database database;
 //	private ChartGenerator chartGenerator;
 //	private BlogGenerator blogGenerator;
+
+    @Test
+    public void testSomething() {
+        Assert.assertTrue(1==1);
+    }
+
 //
 //	@Before
 //	public void setUp() {
