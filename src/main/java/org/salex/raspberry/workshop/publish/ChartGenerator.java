@@ -27,16 +27,15 @@ import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
-import org.salex.raspberry.workshop.data.BoundaryReading;
-import org.salex.raspberry.workshop.data.Measurement;
-import org.salex.raspberry.workshop.data.Reading;
-import org.salex.raspberry.workshop.data.Sensor;
+import org.salex.raspberry.workshop.data.*;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ChartGenerator {
 	private final List<Sensor> sensors;
 	
-	public ChartGenerator(List<Sensor> sensors) {
-		this.sensors = sensors;
+	public ChartGenerator(ClimateDatabase db) {
+		this.sensors = db.getSensors();
 	}
 	
 	public byte[] create365DayTemperatureChart(List<BoundaryReading> data, Sensor sensor) throws IOException {

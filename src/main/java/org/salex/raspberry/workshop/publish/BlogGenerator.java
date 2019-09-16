@@ -3,16 +3,15 @@ package org.salex.raspberry.workshop.publish;
 import java.util.*;
 
 import org.salex.raspberry.workshop.blog.Image;
-import org.salex.raspberry.workshop.data.BoundaryReading;
-import org.salex.raspberry.workshop.data.Measurement;
-import org.salex.raspberry.workshop.data.Reading;
-import org.salex.raspberry.workshop.data.Sensor;
+import org.salex.raspberry.workshop.data.*;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BlogGenerator {
 	private final List<Sensor> sensors;
 	
-	public BlogGenerator(List<Sensor> sensors) {
-		this.sensors = sensors;
+	public BlogGenerator(ClimateDatabase db) {
+		this.sensors = db.getSensors();
 	}
 	
 	public String generateOverview(Measurement data) {

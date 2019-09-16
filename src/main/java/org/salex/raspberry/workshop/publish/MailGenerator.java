@@ -8,14 +8,17 @@ import java.util.List;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
+import org.salex.raspberry.workshop.data.ClimateDatabase;
 import org.salex.raspberry.workshop.data.Measurement;
 import org.salex.raspberry.workshop.data.Sensor;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MailGenerator {
 	private final List<Sensor> sensors;
 	
-	public MailGenerator(List<Sensor> sensors) {
-		this.sensors = sensors;
+	public MailGenerator(ClimateDatabase db) {
+		this.sensors = db.getSensors();
 	}
 	
 	public MimeBodyPart createPhotoText(Date now) throws MessagingException {
