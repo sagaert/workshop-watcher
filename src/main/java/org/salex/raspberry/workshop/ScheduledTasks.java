@@ -82,7 +82,7 @@ public class ScheduledTasks {
     }
 
     // Alle 10 Minuten um 05,15,25,35,45 und 55
-    @Scheduled(cron = "0 0/10 * * * *")
+    @Scheduled(cron = "0 5/10 * * * *")
     public void measure() {
         try {
             final Measurement data = performMeasuring();
