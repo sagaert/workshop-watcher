@@ -75,11 +75,11 @@ public class ClimateDatabase {
         if(measurement.getId() == -1) {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             this.jdbcTemplate.update(connection -> {
-                PreparedStatement measurementStatement = connection.prepareStatement("insert into measurements(moment) values (?)");
+                PreparedStatement measurementStatement = connection.prepareStatement("insert into measurements(moment) values (?)", Statement.RETURN_GENERATED_KEYS);
                 measurementStatement.setTimestamp(1, new Timestamp(measurement.getTimestamp().getTime()));
                 return measurementStatement;
             }, keyHolder);
-            final int measurementId = (int) keyHolder.getKey();
+            final int measurementId = keyHolder.getKey().intValue();
             for(Reading reading : measurement.getReadings()) {
                 this.jdbcTemplate.update(connection -> {
                     PreparedStatement readingStatement = connection.prepareStatement("insert into readings (measurement, sensor, temperature, humidity) values (?, ?, ?, ?)");

@@ -4,12 +4,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.salex.raspberry.workshop.ScheduledTasks;
 import org.salex.raspberry.workshop.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collection;
+import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -23,6 +26,18 @@ public class TestClimateDatabase {
 		Assert.assertEquals(4,sensorCount);
 	}
 
+	@Test
+	public void testWriteMeasurement() {
+		Random rd = new Random();
+		Measurement m = new Measurement();
+		for(Sensor s : this.database.getSensors()) {
+			Reading r = new Reading(rd.nextDouble() * 100, rd.nextDouble() * 30, s, m);
+			m.getReadings().add(r);
+		}
+		Assert.assertEquals(-1, m.getId());
+		Measurement result = this.database.addMeasurement(m);
+		Assert.assertNotEquals(-1, result.getId());
+	}
 //	@Test
 //	public void testReadMeasurements() {
 //		Collection<Measurement> m = this.database.getMeasurements(24);
