@@ -1,5 +1,6 @@
 package org.salex.raspberry.workshop;
 
+import org.salex.raspberry.workshop.blog.Blog;
 import org.salex.raspberry.workshop.photo.Photographer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,11 @@ public class ScheduledTasks {
 
     private final Photographer photgrapher;
 
-    public ScheduledTasks(Photographer photgrapher) {
+    private final Blog blog;
+
+    public ScheduledTasks(Photographer photgrapher, Blog blog) {
         this.photgrapher = photgrapher;
+        this.blog = blog;
     }
 
     // Alle 5 Minuten um 03,08,13,18,23,28,33,38,43,48,53 und 58

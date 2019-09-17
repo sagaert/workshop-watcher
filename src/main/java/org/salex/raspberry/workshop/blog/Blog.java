@@ -1,20 +1,21 @@
 package org.salex.raspberry.workshop.blog;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-// TODO: Umscheiben auf Spring !!!
+import java.util.*;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+@Component
 public class Blog {
+	private static final Logger LOG = LoggerFactory.getLogger(Blog.class);
+
 	public final static String OVERVIEW_ID = "146";
 	public final static String OVERVIEW_TYPE = "content_block";
 	public final static String DETAILS_ID = "148";
@@ -24,13 +25,14 @@ public class Blog {
 	public final static String REFERENCED_IMAGES_META_FIELD = "referenced_images";
 	public final static String REFERENCED_IMAGES_SEPARATOR = ";";
 
-	private final String auth;
-	private final WebTarget target;
+	private final RestTemplate template;
 
-	public Blog(final String url, final String username, final String password) {
-		this.auth = "Basic "
-				+ Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
-		this.target = ClientBuilder.newClient().target(url);
+	public Blog(
+			@Value("${org.salex.blog.url}") String url,
+			@Value("${org.salex.blog.username}") String username,
+			@Value("${org.salex.blog.password}") String password,
+			RestTemplateBuilder builder) {
+		this.template = builder.rootUri(url).basicAuthentication(username, password).build();
 	}
 
 	public void updateOverview(String content) {
@@ -58,7 +60,8 @@ public class Blog {
 		if(!images.isEmpty()) {
 			post.getMeta().setReferencedImages(getRefrencedImages(images));
 		}
-		this.target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).post(Entity.json(post));
+//		this.target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).post(Entity.json(post));
+		this.template.postForLocation(type + "/" + id, post);
 
 		// Delete old references images
 		if(oldReferencedImages != null) {
@@ -69,8 +72,11 @@ public class Blog {
 	}
 
 	public void deleteImage(String id) {
-		this.target.path("media").path(id).queryParam("force", true).request().header("authorization", this.auth)
-				.delete();
+//		this.target.path("media").path(id).queryParam("force", true).request().header("authorization", this.auth)
+//				.delete();
+		Map<String, String> params = new HashMap<>();
+		params.put("forcw", "true");
+		this.template.delete("media/" + id, params);
 	}
 
 	private String getRefrencedImages(List<Image> images) {
@@ -88,21 +94,28 @@ public class Blog {
 	}
 
 	public Post getPost(String id, String type) {
-		return target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).get(Post.class);
+//		return target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).get(Post.class);
+		return this.template.getForEntity(type + "/" + id, Post.class).getBody();
 	}
 	
 	public Image addPNGImage(String prefix, byte[] data) {
 		final String filename = prefix + UUID.randomUUID() + ".png";
-		final Response uploadResult = this.target.path("media").request(MediaType.APPLICATION_JSON)
-				.header("authorization", this.auth).header("content-type", "image/png")
-				.header("content-disposition", "attachement; filename=" + filename)
-				.post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
-		if (uploadResult.getStatus() == 201) {
-			final String location = uploadResult.getHeaderString("Location");
+//		final Response uploadResult = this.target.path("media").request(MediaType.APPLICATION_JSON)
+//				.header("authorization", this.auth).header("content-type", "image/png")
+//				.header("content-disposition", "attachement; filename=" + filename)
+//				.post(Entity.entity(data, MediaType.APPLICATION_OCTET_STREAM));
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("content-type", "image/png");
+		headers.set("content-disposition", "attachement; filename=" + filename);
+		HttpEntity<byte[]> entity = new HttpEntity(data, headers);
+		ResponseEntity<String> uploadResult = this.template.postForEntity("media", entity, String.class);
+		if (uploadResult.getStatusCodeValue() == 201) {
+			final String location = uploadResult.getHeaders().get("Location").get(0);
 			if (location != null) {
 				final String[] elements = location.split("/");
 				final Image image = new Image(elements[elements.length - 1]);
-				final Media media = this.target.path("media").path(image.getId()).request(MediaType.APPLICATION_JSON).get(Media.class);
+//				final Media media = this.target.path("media").path(image.getId()).request(MediaType.APPLICATION_JSON).get(Media.class);
+				final Media media = this.template.getForEntity("media/" + image.getId(), Media.class).getBody();
 				if (media.getDetails().getSizes().containsKey("full")) {
 					image.setFull(media.getDetails().getSizes().get("full").getUrl());
 				}
@@ -115,7 +128,7 @@ public class Blog {
 			}
 			return null;
 		} else {
-			throw new RuntimeException("Fehler beim hochladen eines Bildes: " + uploadResult.getStatusInfo());
+			throw new RuntimeException("Fehler beim hochladen eines Bildes: " + uploadResult.getStatusCode().getReasonPhrase());
 		}
 	}
 }
