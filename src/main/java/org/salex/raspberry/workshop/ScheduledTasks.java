@@ -22,8 +22,8 @@ public class ScheduledTasks {
 
     // Alle 5 Minuten um 03,08,13,18,23,28,33,38,43,48,53 und 58
     @Scheduled(cron = "0 3/5 * * * *")
-    public void photographer() throws IOException {
-        this.photgrapher.takePhoto(800, 600);
+    public void photographer() throws IOException, InterruptedException {
+        this.photgrapher.takePhotoForCache();
     }
 
     // Alle 10 Minuten um 05,15,25,35,45 und 55
