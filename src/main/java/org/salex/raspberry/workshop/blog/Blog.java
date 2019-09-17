@@ -75,7 +75,7 @@ public class Blog {
 //		this.target.path("media").path(id).queryParam("force", true).request().header("authorization", this.auth)
 //				.delete();
 		Map<String, String> params = new HashMap<>();
-		params.put("forcw", "true");
+		params.put("force", "true");
 		this.template.delete("/media/" + id, params);
 	}
 
