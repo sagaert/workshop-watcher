@@ -1,9 +1,1 @@
-Agent:
-sudo java -jar agent.jar
-
-Datenbank:
-java -Dderby.system.home=/home/pi/database -jar /opt/jdk1.8.0_51/db/lib/derbyrun.jar server -h 0.0.0.0 start &
-java -Dderby.system.home=/home/pi/database -jar /opt/jdk1.8.0_51/db/lib/derbyrun.jar server -h 0.0.0.0 shutdown
-java -Dderby.system.home=c:/Workspace/database -jar /C/PROGS/jdk1.8.0_51/db/lib/derbyrun.jar server -h 0.0.0.0 start &
-java -Dderby.system.home=c:/Workspace/database -jar /C/PROGS/jdk1.8.0_51/db/lib/derbyrun.jar server -h 0.0.0.0 shutdown
-Hinweis: In dem derby.system.home-Verzeichnis liegen die Datenbanken und das derby.log
+ENCRYPT_KEY=##KEY## sudo java -jar agent.jar &> agent.log &
