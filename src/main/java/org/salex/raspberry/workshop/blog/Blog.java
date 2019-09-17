@@ -61,7 +61,7 @@ public class Blog {
 			post.getMeta().setReferencedImages(getRefrencedImages(images));
 		}
 //		this.target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).post(Entity.json(post));
-		this.template.postForLocation(type + "/" + id, post);
+		this.template.postForLocation("/" + type + "/" + id, post);
 
 		// Delete old references images
 		if(oldReferencedImages != null) {
@@ -76,7 +76,7 @@ public class Blog {
 //				.delete();
 		Map<String, String> params = new HashMap<>();
 		params.put("forcw", "true");
-		this.template.delete("media/" + id, params);
+		this.template.delete("/media/" + id, params);
 	}
 
 	private String getRefrencedImages(List<Image> images) {
@@ -95,7 +95,7 @@ public class Blog {
 
 	public Post getPost(String id, String type) {
 //		return target.path(type).path(id).request(MediaType.APPLICATION_JSON).header("authorization", this.auth).get(Post.class);
-		return this.template.getForEntity(type + "/" + id, Post.class).getBody();
+		return this.template.getForEntity("/" + type + "/" + id, Post.class).getBody();
 	}
 	
 	public Image addPNGImage(String prefix, byte[] data) {
@@ -108,14 +108,14 @@ public class Blog {
 		headers.set("content-type", "image/png");
 		headers.set("content-disposition", "attachement; filename=" + filename);
 		HttpEntity<byte[]> entity = new HttpEntity(data, headers);
-		ResponseEntity<String> uploadResult = this.template.postForEntity("media", entity, String.class);
+		ResponseEntity<String> uploadResult = this.template.postForEntity("/media", entity, String.class);
 		if (uploadResult.getStatusCodeValue() == 201) {
 			final String location = uploadResult.getHeaders().get("Location").get(0);
 			if (location != null) {
 				final String[] elements = location.split("/");
 				final Image image = new Image(elements[elements.length - 1]);
 //				final Media media = this.target.path("media").path(image.getId()).request(MediaType.APPLICATION_JSON).get(Media.class);
-				final Media media = this.template.getForEntity("media/" + image.getId(), Media.class).getBody();
+				final Media media = this.template.getForEntity("/media/" + image.getId(), Media.class).getBody();
 				if (media.getDetails().getSizes().containsKey("full")) {
 					image.setFull(media.getDetails().getSizes().get("full").getUrl());
 				}
