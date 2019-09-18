@@ -1,8 +1,6 @@
 package org.salex.raspberry.workshop.test;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.salex.raspberry.workshop.blog.Blog;
 import org.salex.raspberry.workshop.blog.Image;
@@ -28,6 +26,9 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TestBlog {
+	private final static String TEST_PAGE_ID = "61290";
+	private final static String TEST_PAGE_TYPE = "pages";
+
     @Autowired
 	private Blog blog;
 
@@ -41,12 +42,9 @@ public class TestBlog {
     private BlogGenerator blogGenerator;
 
 	@Test
-    @Ignore
-	public void testReadOverview() throws Exception {
-		final Post overview = blog.getPost(Blog.OVERVIEW_ID, Blog.OVERVIEW_TYPE);
+	public void testReadPost() throws Exception {
+		final Post overview = blog.getPost(TEST_PAGE_ID, TEST_PAGE_TYPE);
 		Assert.assertNotNull(overview);
-		Assert.assertNotNull(overview);
-		Assert.assertNotNull(overview.getContent());
 		Assert.assertNotNull(overview.getContent());
 	}
 
