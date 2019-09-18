@@ -42,6 +42,7 @@ public class TestBlog {
     private BlogGenerator blogGenerator;
 
 	@Test
+	@Ignore
 	public void testReadPost() throws Exception {
 		final Post overview = blog.getPost(TEST_PAGE_ID, TEST_PAGE_TYPE);
 		Assert.assertNotNull(overview);
