@@ -1,17 +1,15 @@
 package org.salex.raspberry.workshop.test;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.salex.raspberry.workshop.ScheduledTasks;
 import org.salex.raspberry.workshop.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collection;
 import java.util.Random;
 
 @RunWith(SpringRunner.class)
