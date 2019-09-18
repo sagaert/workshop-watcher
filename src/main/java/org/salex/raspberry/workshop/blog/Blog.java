@@ -14,16 +14,13 @@ import java.util.*;
 
 @Component
 public class Blog {
-	private static final Logger LOG = LoggerFactory.getLogger(Blog.class);
-
-	public final static String OVERVIEW_ID = "146";
-	public final static String OVERVIEW_TYPE = "content_block";
-	public final static String DETAILS_ID = "148";
-	public final static String DETAILS_TYPE = "pages";
-	public final static String HISTORY_ID = "60309";
-	public final static String HISTORY_TYPE = "pages";
-	public final static String REFERENCED_IMAGES_META_FIELD = "referenced_images";
-	public final static String REFERENCED_IMAGES_SEPARATOR = ";";
+    private final static String OVERVIEW_ID = "146";
+    private final static String OVERVIEW_TYPE = "content_block";
+    private final static String DETAILS_ID = "148";
+    private final static String DETAILS_TYPE = "pages";
+    private final static String HISTORY_ID = "60309";
+    private final static String HISTORY_TYPE = "pages";
+    private final static String REFERENCED_IMAGES_SEPARATOR = ";";
 
 	private final RestTemplate template;
 
@@ -36,7 +33,7 @@ public class Blog {
 	}
 
 	public void updateOverview(String content) {
-		updatePost(OVERVIEW_ID, OVERVIEW_TYPE, content, new ArrayList<Image>());
+		updatePost(OVERVIEW_ID, OVERVIEW_TYPE, content, new ArrayList<>());
 	}
 
 	public void updateDetails(String content, List<Image> images) {
