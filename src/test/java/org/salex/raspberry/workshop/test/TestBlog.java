@@ -49,8 +49,7 @@ public class TestBlog {
 	}
 
 	@Test
-    @Ignore
-	public void testAddNewImage() throws Exception {
+    public void testAddNewImage() throws Exception {
 		byte[] data = createImage("Test-Bild");
 		final Image image = blog.addPNGImage("verlauf-", data);
 		Assert.assertNotNull(image);
@@ -61,10 +60,11 @@ public class TestBlog {
 	}
 
 	@Test
-    @Ignore
+	@Ignore
 	public void testUpdatePost() throws Exception {
-		final String content = "<p>" + UUID.randomUUID() + "</p>";
-		byte[] data = createImage("Test-Bild");
+		String uuid = UUID.randomUUID().toString();
+		final String content = "<p>" + uuid + "</p>";
+		byte[] data = createImage("Test-Bild für " + uuid);
 		final Image image = blog.addPNGImage("verlauf-", data);
 		final List<Image> images = new ArrayList<>();
 		images.add(image);

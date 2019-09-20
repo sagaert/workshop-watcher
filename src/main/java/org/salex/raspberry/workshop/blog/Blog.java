@@ -1,7 +1,5 @@
 package org.salex.raspberry.workshop.blog;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -71,9 +69,7 @@ public class Blog {
 	public void deleteImage(String id) {
 //		this.target.path("media").path(id).queryParam("force", true).request().header("authorization", this.auth)
 //				.delete();
-		Map<String, String> params = new HashMap<>();
-		params.put("force", "true");
-		this.template.delete("/media/" + id, params);
+		this.template.delete("/media/" + id + "?force=true");
 	}
 
 	private String getRefrencedImages(List<Image> images) {
