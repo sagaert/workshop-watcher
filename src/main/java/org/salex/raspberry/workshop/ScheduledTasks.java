@@ -9,6 +9,7 @@ import org.salex.raspberry.workshop.publish.ChartGenerator;
 import org.salex.raspberry.workshop.publish.MailGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,14 +21,13 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 
 @Component
 public class ScheduledTasks {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledTasks.class);
+
+    private final Gauger gauger;
 
     private final Photographer photographer;
 
@@ -43,7 +43,15 @@ public class ScheduledTasks {
 
     private final JavaMailSender mailSender;
 
-    public ScheduledTasks(Photographer photographer, ClimateDatabase database, Blog blog, BlogGenerator blogGenerator, ChartGenerator chartGenerator, MailGenerator mailGenerator, JavaMailSender mailSender) {
+    private final String alertMailTarget;
+
+    private final String photoMailTarget;
+
+    public ScheduledTasks(Gauger gauger, Photographer photographer, ClimateDatabase database, Blog blog, BlogGenerator blogGenerator, ChartGenerator chartGenerator, MailGenerator mailGenerator, JavaMailSender mailSender,
+                          @Value("${org.salex.mail.alert.target}") String alertMailTarget, @Value("${org.salex.mail.photo.target}") String phototMailTarget) {
+        this.alertMailTarget = alertMailTarget;
+        this.photoMailTarget = phototMailTarget;
+        this.gauger = gauger;
         this.photographer = photographer;
         this.database = database;
         this.blog = blog;
@@ -53,22 +61,7 @@ public class ScheduledTasks {
         this.mailSender = mailSender;
     }
 
-    private Session getMailSession(String username, String password) {
-        final Properties mailProperties = new Properties();
-        mailProperties.put("mail.smtp.starttls.enable", "true");
-        mailProperties.put("mail.smtp.host", "smtp.1und1.de");
-        mailProperties.put("mail.smtp.auth", "true");
-        final PasswordAuthentication authentication = new PasswordAuthentication(username, password);
-        return Session.getDefaultInstance(mailProperties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return authentication;
-            }
-        });
-    }
-
-    // Alle 5 Minuten um 03,08,13,18,23,28,33,38,43,48,53 und 58
-    @Scheduled(cron = "0 3/5 * * * *")
+    @Scheduled(cron = "${org.salex.cron.photographer}")
     public void photographer() {
         try {
             this.photographer.takePhotoForCache();
@@ -77,11 +70,10 @@ public class ScheduledTasks {
         }
     }
 
-    // Alle 10 Minuten um 05,15,25,35,45 und 55
-    @Scheduled(cron = "0 5/10 * * * *")
+    @Scheduled(cron = "${org.salex.cron.gauger}")
     public void measure() {
         try {
-            final Measurement data = performMeasuring();
+            final Measurement data = this.gauger.performMeasuring();
             this.database.addMeasurement(data);
             postOverviewOnBlog(data);
             postDetailsOnBlog(this.database.getMeasurements(24));
@@ -90,8 +82,7 @@ public class ScheduledTasks {
         }
     }
 
-    // Jeden Tag um 00:00
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "${org.salex.cron.historyPublisher}")
     public void history() {
         try {
             final Map<Sensor, List<BoundaryReading>> data = this.database.getBoundaryReading(365);
@@ -118,8 +109,7 @@ public class ScheduledTasks {
 
     }
 
-    // Jeden Tag um 06:00
-    @Scheduled(cron = "0 0 6 * * *")
+    @Scheduled(cron = "${org.salex.cron.alertMailer}")
     public void alarmMailer() {
         try {
             final List<Measurement> data = this.database.getMeasurements(24);
@@ -136,7 +126,7 @@ public class ScheduledTasks {
                     final MimeMessage message = this.mailSender.createMimeMessage();
                     message.setFrom(new InternetAddress("noreply@salex.org", "Werkstatt"));
                     message.setHeader("X-Priority", "1");
-                    message.setRecipient(Message.RecipientType.TO, new InternetAddress("sascha.gaertner@salex.org"));
+                    message.setRecipient(Message.RecipientType.TO, new InternetAddress(this.alertMailTarget));
                     message.setSubject("Temperaturalarm");
                     message.setContent(new MimeMultipart(this.mailGenerator.createAlertText(data)));
                     this.mailSender.send(message);
@@ -149,8 +139,7 @@ public class ScheduledTasks {
         }
     }
 
-    // Jede Stunde
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "${org.salex.cron.photoMailer}")
     public void photoMailer() {
         try {
             final Date now = new Date();
@@ -159,7 +148,7 @@ public class ScheduledTasks {
                 try {
                     final MimeMessage message = this.mailSender.createMimeMessage();
                     message.setFrom(new InternetAddress("noreply@salex.org", "Werkstatt"));
-                    message.setRecipient(Message.RecipientType.TO, new InternetAddress("sascha.gaertner@salex.org"));
+                    message.setRecipient(Message.RecipientType.TO, new InternetAddress(this.photoMailTarget));
                     message.setSubject("Werkstattfotos");
                     final MimeMultipart multipart = new MimeMultipart();
                     multipart.addBodyPart(this.mailGenerator.createPhotoText(now));
@@ -201,34 +190,5 @@ public class ScheduledTasks {
         } catch (Throwable e) {
             LOG.error("Error posting data on blog", e);
         }
-    }
-
-    private Measurement performMeasuring() throws IOException {
-        final Measurement data = new Measurement();
-        for(Sensor sensor : this.database.getSensors()) {
-            if(sensor.getType().equals(Sensor.Type.CPU)) {
-                data.getReadings().add(performMeasuringCPU(data, sensor));
-            } else if(sensor.getType().equals(Sensor.Type.DHT22)) {
-                data.getReadings().add(performMeasuringDHT22(data, sensor));
-            } else {
-                LOG.error("Error on measuring: Unknown sensor type " + sensor.getType());
-            }
-        }
-        return data;
-    }
-
-    private Reading performMeasuringCPU(Measurement measurement, Sensor sensor) throws IOException {
-        final Process p = Runtime.getRuntime().exec(new String[] { "/usr/bin/vcgencmd", "measure_temp" });
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
-        final String[] result = reader.readLine().split("[=']");
-        return new Reading(Double.parseDouble(result[1]), sensor, measurement);
-    }
-
-    private Reading performMeasuringDHT22(Measurement measurement, Sensor sensor) throws IOException {
-        final Process p = Runtime.getRuntime()
-                .exec(new String[] { "/home/pi/Sensors/ReadDHT22.py", sensor.getPort() });
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
-        final String[] result = reader.readLine().split(";");
-        return new Reading(Double.parseDouble(result[1]), Double.parseDouble(result[0]), sensor, measurement);
     }
 }
