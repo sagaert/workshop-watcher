@@ -1,6 +1,5 @@
 package org.salex.raspberry.workshop;
 
-import com.sun.activation.registries.MailcapFile;
 import org.salex.raspberry.workshop.blog.Blog;
 import org.salex.raspberry.workshop.blog.Image;
 import org.salex.raspberry.workshop.data.*;
@@ -10,7 +9,7 @@ import org.salex.raspberry.workshop.publish.ChartGenerator;
 import org.salex.raspberry.workshop.publish.MailGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +23,6 @@ import javax.mail.internet.MimeMultipart;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -44,17 +41,16 @@ public class ScheduledTasks {
 
     private final MailGenerator mailGenerator;
 
-    private final Session mailSession;
+    private final JavaMailSender mailSender;
 
-    public ScheduledTasks(Photographer photographer, ClimateDatabase database, Blog blog, BlogGenerator blogGenerator, ChartGenerator chartGenerator, MailGenerator mailGenerator, @Value("${org.salex.mail.username}") String username,
-                          @Value("${org.salex.mail.password}") String password) {
+    public ScheduledTasks(Photographer photographer, ClimateDatabase database, Blog blog, BlogGenerator blogGenerator, ChartGenerator chartGenerator, MailGenerator mailGenerator, JavaMailSender mailSender) {
         this.photographer = photographer;
         this.database = database;
         this.blog = blog;
         this.blogGenerator = blogGenerator;
         this.chartGenerator = chartGenerator;
         this.mailGenerator = mailGenerator;
-        this.mailSession = getMailSession(username, password);
+        this.mailSender = mailSender;
     }
 
     private Session getMailSession(String username, String password) {
@@ -125,7 +121,32 @@ public class ScheduledTasks {
     // Jeden Tag um 06:00
     @Scheduled(cron = "0 0 6 * * *")
     public void alarmMailer() {
-        LOG.info("Send alarm mail if necessary.");
+        try {
+            final List<Measurement> data = this.database.getMeasurements(24);
+            boolean alert = false;
+            for(Measurement measurement : data) {
+                for(Reading reading : measurement.getReadings()) {
+                    if(reading.getTemperature() < 3.0d) {
+                        alert = true;
+                    }
+                }
+            }
+            if (alert) {
+                try {
+                    final MimeMessage message = this.mailSender.createMimeMessage();
+                    message.setFrom(new InternetAddress("noreply@salex.org", "Werkstatt"));
+                    message.setHeader("X-Priority", "1");
+                    message.setRecipient(Message.RecipientType.TO, new InternetAddress("sascha.gaertner@salex.org"));
+                    message.setSubject("Temperaturalarm");
+                    message.setContent(new MimeMultipart(this.mailGenerator.createAlertText(data)));
+                    this.mailSender.send(message);
+                } catch (MessagingException e) {
+                    LOG.error("Error sending mail", e);
+                }
+            }
+        } catch (Throwable e) {
+            LOG.error("Error reading data", e);
+        }
     }
 
     // Jede Stunde
@@ -136,7 +157,7 @@ public class ScheduledTasks {
             final Map<String, String> photos = this.photographer.getPhotos();
             if (!photos.isEmpty()) {
                 try {
-                    final Message message = new MimeMessage(mailSession);
+                    final MimeMessage message = this.mailSender.createMimeMessage();
                     message.setFrom(new InternetAddress("noreply@salex.org", "Werkstatt"));
                     message.setRecipient(Message.RecipientType.TO, new InternetAddress("sascha.gaertner@salex.org"));
                     message.setSubject("Werkstattfotos");
@@ -151,7 +172,7 @@ public class ScheduledTasks {
                         mailedFiles.add(filename);
                     }
                     message.setContent(multipart);
-                    Transport.send(message);
+                    this.mailSender.send(message);
                     this.photographer.deletePhotos(mailedFiles);
                 } catch (MessagingException e) {
                     LOG.error("Error sending mail", e);
