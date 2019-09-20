@@ -52,7 +52,7 @@ public class Gauger {
 
     private Reading performMeasuringDHT22(Measurement measurement, Sensor sensor) throws IOException {
         final Process p = Runtime.getRuntime()
-                .exec(new String[] { this.dhtMeasureScript sensor.getPort() });
+                .exec(new String[] { this.dhtMeasureScript, sensor.getPort() });
         final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), "UTF-8"));
         final String[] result = reader.readLine().split(";");
         return new Reading(Double.parseDouble(result[1]), Double.parseDouble(result[0]), sensor, measurement);
