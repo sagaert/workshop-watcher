@@ -49,6 +49,7 @@ public class TestBlog {
 	}
 
 	@Test
+	@Ignore
     public void testAddNewImage() throws Exception {
 		byte[] data = createImage("Test-Bild");
 		final Image image = blog.addPNGImage("verlauf-", data);
