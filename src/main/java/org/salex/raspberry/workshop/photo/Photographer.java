@@ -96,7 +96,7 @@ public class Photographer {
 
     private boolean isWorkshopLighted(BufferedImage image ) throws IOException {
         if(image != null) {
-            final Color pixel = new Color(image.getRGB(420,20));
+            final Color pixel = new Color(image.getRGB(590,10));
             return pixel.getRed() > 220 && pixel.getGreen() > 220 && pixel.getBlue() > 220;
         } else {
             return false;
