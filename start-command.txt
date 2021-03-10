@@ -1,0 +1,1 @@
+ENCRYPT_KEY=##KEY## sudo java -jar agent.jar &> agent.log &
